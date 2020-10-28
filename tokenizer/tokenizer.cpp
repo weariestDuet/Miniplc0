@@ -150,7 +150,7 @@ namespace miniplc0 {
 					if(temp>INT32_MAX)
 						return std::make_pair(std::optional<Token>(), std::make_optional<CompilationError>(pos, ErrorCode::ErrIntegerOverflow));
 					else
-						return std::make_pair(std::make_optional<Token>(TokenType::UNSIGNED_INTEGER,temp,pos,currentPos()), std::optional<CompilationError>());
+						return std::make_pair(std::make_optional<Token>(TokenType::UNSIGNED_INTEGER,(int32_t)temp,pos,currentPos()), std::optional<CompilationError>());
 				}
 
 				auto ch = current_char.value();
@@ -246,6 +246,11 @@ namespace miniplc0 {
 			case DIVISION_SIGN_STATE:{
 				unreadLast();
 				return std::make_pair(std::make_optional<Token>(TokenType::DIVISION_SIGN, '/', pos, currentPos()), std::optional<CompilationError>());
+			}
+
+			case EQUAL_SIGN_STATE:{
+				unreadLast();
+				return std::make_pair(std::make_optional<Token>(TokenType::DIVISION_SIGN, '=', pos, currentPos()), std::optional<CompilationError>());
 			}
 
 			case SEMICOLON_STATE:{
