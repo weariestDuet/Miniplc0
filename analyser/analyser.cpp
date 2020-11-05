@@ -225,7 +225,8 @@ namespace miniplc0 {
 		next =nextToken();
 		if(!next.has_value()||next.value().GetType() != TokenType::UNSIGNED_INTEGER)
 			return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrIncompleteExpression);
-		out = (int32_t)prefix * stoi(next.value().GetValueString()); 
+		int32_t ans = stoi(next.value().GetValueString());
+		out = prefix * ans; 
 		return {};
 	}
 
@@ -422,6 +423,7 @@ namespace miniplc0 {
 			auto err = analyseExpression();
 			if (err.has_value())
 				return err;
+
 			next =nextToken();
 			if(!next.has_value()||next.value().GetType() != TokenType::RIGHT_BRACKET)
 				return {CompilationError(_current_pos, ErrorCode::ErrIncompleteExpression)};
