@@ -145,7 +145,7 @@ namespace miniplc0 {
 			if (!next.has_value() || next.value().GetType() != TokenType::SEMICOLON){
 				return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrNoSemicolon);
 			}
-		//初始化变量
+
 			addVariable(temp.value());
 			int32_t index = getIndex(temp.value().GetValueString());
             _instructions.emplace_back(Operation::STO, index);
@@ -215,7 +215,6 @@ namespace miniplc0 {
 			return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrIncompleteExpression);
 		if (next.value().GetType() == TokenType::PLUS_SIGN){
 			prefix = 1;
-			
 		}
 		else if (next.value().GetType() == TokenType::MINUS_SIGN) {
 			prefix = -1;
@@ -294,7 +293,7 @@ namespace miniplc0 {
 		
 		auto next = nextToken();
 		if(!next.has_value()||next.value().GetType() != TokenType::EQUAL_SIGN)
-			return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrConstantNeedValue);
+			return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrIncompleteExpression);
 
 		auto ae = analyseExpression();
 		if(ae.has_value())
