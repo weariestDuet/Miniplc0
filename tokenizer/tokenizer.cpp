@@ -250,7 +250,7 @@ namespace miniplc0 {
 
 			case EQUAL_SIGN_STATE:{
 				unreadLast();
-				return std::make_pair(std::make_optional<Token>(TokenType::DIVISION_SIGN, '=', pos, currentPos()), std::optional<CompilationError>());
+				return std::make_pair(std::make_optional<Token>(TokenType::EQUAL_SIGN, '=', pos, currentPos()), std::optional<CompilationError>());
 			}
 
 			case SEMICOLON_STATE:{

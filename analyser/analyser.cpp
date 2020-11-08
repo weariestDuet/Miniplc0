@@ -293,7 +293,7 @@ namespace miniplc0 {
 		
 		auto next = nextToken();
 		if(!next.has_value()||next.value().GetType() != TokenType::EQUAL_SIGN)
-			return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrIncompleteExpression);
+			return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrConstantNeedValue);
 
 		auto ae = analyseExpression();
 		if(ae.has_value())
