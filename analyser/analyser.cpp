@@ -135,11 +135,11 @@ namespace miniplc0 {
 					return err;
 				initialized = true;
 				next = nextToken();
-			}
 		// ';'
-			if (!next.has_value() || next.value().GetType() != TokenType::SEMICOLON){
-				unreadToken();
-				return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrNoSemicolon);
+				if (!next.has_value() || next.value().GetType() != TokenType::SEMICOLON){
+					unreadToken();
+					return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrNoSemicolon);
+				}
 			}
 		
 		// 把变量加入符号表
@@ -177,21 +177,21 @@ namespace miniplc0 {
 			switch (next.value().GetType()) {
 				// 这里需要你针对不同的预读结果来调用不同的子程序
 				// 注意我们没有针对空语句单独声明一个函数，因此可以直接在这里返回
-			case IDENTIFIER:{
+			case TokenType::IDENTIFIER:{
 				err = analyseAssignmentStatement();
 				if(err.has_value())
 					return err;
 				break;
 			}
 
-			case PRINT:{
+			case TokenType::PRINT:{
 				err = analyseOutputStatement();
 				if(err.has_value())
 					return err;
 				break;
 			}
 
-			case SEMICOLON:{
+			case TokenType::SEMICOLON:{
 				nextToken();
 				break;
 			}
@@ -405,7 +405,7 @@ namespace miniplc0 {
     		// - 加载常数
     		// int32_t val = /* 值 */;
     		// _instructions.emplace_back(Operation::LIT, val);
-		case IDENTIFIER:{
+		case TokenType::IDENTIFIER:{
 			auto name = next.value().GetValueString();
 			if(!isDeclared(name))
 				return {CompilationError(_current_pos, ErrorCode::ErrNotDeclared)};
@@ -415,13 +415,13 @@ namespace miniplc0 {
 			break;
 		}
 
-		case UNSIGNED_INTEGER:{
+		case TokenType::UNSIGNED_INTEGER:{
 			int32_t val = stoi(next.value().GetValueString()); 
 			_instructions.emplace_back(Operation::LIT, val);
 			break;
 		}
 
-		case LEFT_BRACKET:{
+		case TokenType::LEFT_BRACKET:{
 			auto err = analyseExpression();
 			if (err.has_value())
 				return err;
