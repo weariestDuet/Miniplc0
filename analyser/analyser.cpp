@@ -123,36 +123,35 @@ namespace miniplc0 {
 			if(isDeclared(id.value().GetValueString()))
 				return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrDuplicateDeclaration);
 		// 变量可能没有初始化，仍然需要一次预读
-			bool initialized = /*填写*/ false;
+			// bool initialized = /*填写*/ false;
 			next = nextToken();
 		// '='
 			if(!next.has_value())
-				return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrNoSemicolon);
-			else if(next.value().GetType() != TokenType::EQUAL_SIGN){
+				return {};
+			_instructions.emplace_back(Operation::LIT, 0);
+			if(next.value().GetType() != TokenType::EQUAL_SIGN){
 		// '<表达式>'
+				unreadToken();
+				addUninitializedVariable(id.value());
+			}
+			else{
 				auto err = analyseExpression();
 				if(err.has_value())
 					return err;
-				initialized = true;
-				next = nextToken();
-		// ';'
-				if (!next.has_value() || next.value().GetType() != TokenType::SEMICOLON){
-					unreadToken();
-					return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrNoSemicolon);
-				}
+				// initialized = true;
+				addVariable(id.value());
+				int32_t index = getIndex(id.value().GetValueString());
+
+                _instructions.emplace_back(Operation::STO, index);
 			}
-		
-		// 把变量加入符号表
-  			if (initialized) {
-    			addVariable(id.value());
-    	// 已经初始化的变量的值的位置正好是之前表达式计算结果，所以不做处理
-  			} else {
-    			addUninitializedVariable(id.value());
-    	// 加载一个任意的初始值
-    			_instructions.emplace_back(Operation::LIT, 0);
+			// ';'
+			next = nextToken();
+			if (!next.has_value() || next.value().GetType() != TokenType::SEMICOLON){
+				unreadToken();
+				return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrNoSemicolon);
 			}
-		return {};
 		}
+		return {};
 	}
 
 	// <语句序列> ::= {<语句>}
@@ -215,16 +214,15 @@ namespace miniplc0 {
 		auto prefix = 1;
 		if (!next.has_value())
 			return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrIncompleteExpression);
-		if (next.value().GetType() == TokenType::PLUS_SIGN)
+		if (next.value().GetType() == TokenType::PLUS_SIGN){
 			prefix = 1;
+			next =nextToken();
+		}
 		else if (next.value().GetType() == TokenType::MINUS_SIGN) {
 			prefix = -1;
-			_instructions.emplace_back(Operation::LIT, 0);
+			next =nextToken();
 		}
-		else
-			unreadToken();
 		
-		next =nextToken();
 		if(!next.has_value()||next.value().GetType() != TokenType::UNSIGNED_INTEGER)
 			return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrIncompleteExpression);
 		int32_t ans = stoi(next.value().GetValueString());
@@ -273,9 +271,7 @@ namespace miniplc0 {
 		// 标识符是常量吗？
 		// 需要生成指令吗？
 		auto id = nextToken();
-		if(!id.has_value())
-			return {};
-		else if(id.value().GetType() != TokenType::IDENTIFIER)
+		if(!id.has_value()||id.value().GetType() != TokenType::IDENTIFIER)
 			return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrNeedIdentifier);
   		auto name = id.value().GetValueString();
   		// 未定义
@@ -409,7 +405,7 @@ namespace miniplc0 {
 			auto name = next.value().GetValueString();
 			if(!isDeclared(name))
 				return {CompilationError(_current_pos, ErrorCode::ErrNotDeclared)};
-			if (!isInitializedVariable(name) && !isConstant(name))
+			if (!isInitializedVariable(name))
 				return {CompilationError(_current_pos,ErrorCode::ErrNotInitialized)};
 			_instructions.emplace_back(Operation::LOD, getIndex(name));
 			break;

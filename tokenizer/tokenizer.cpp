@@ -183,15 +183,15 @@ namespace miniplc0 {
 					std::string temp;
 					ss >> temp;
 					if(temp=="begin")
-						return std::make_pair(std::make_optional<Token>(TokenType::BEGIN,"begin",pos,currentPos()), std::optional<CompilationError>());
+						return std::make_pair(std::make_optional<Token>(TokenType::BEGIN,temp,pos,currentPos()), std::optional<CompilationError>());
 					else if(temp=="end")
-						return std::make_pair(std::make_optional<Token>(TokenType::END,"end",pos,currentPos()), std::optional<CompilationError>());
+						return std::make_pair(std::make_optional<Token>(TokenType::END,temp,pos,currentPos()), std::optional<CompilationError>());
 					else if(temp=="var")
-						return std::make_pair(std::make_optional<Token>(TokenType::VAR,"var",pos,currentPos()), std::optional<CompilationError>());
+						return std::make_pair(std::make_optional<Token>(TokenType::VAR,temp,pos,currentPos()), std::optional<CompilationError>());
 					else if(temp=="const")
-						return std::make_pair(std::make_optional<Token>(TokenType::CONST,"const",pos,currentPos()), std::optional<CompilationError>());
+						return std::make_pair(std::make_optional<Token>(TokenType::CONST,temp,pos,currentPos()), std::optional<CompilationError>());
 					else if(temp=="print")
-						return std::make_pair(std::make_optional<Token>(TokenType::PRINT,"print",pos,currentPos()), std::optional<CompilationError>());
+						return std::make_pair(std::make_optional<Token>(TokenType::PRINT,temp,pos,currentPos()), std::optional<CompilationError>());
 					else 
 						return std::make_pair(std::make_optional<Token>(TokenType::IDENTIFIER,temp,pos,currentPos()), std::optional<CompilationError>());
 				}
@@ -205,15 +205,15 @@ namespace miniplc0 {
 					std::string temp;
 					ss >> temp;
 					if(temp=="begin")
-						return std::make_pair(std::make_optional<Token>(TokenType::BEGIN,"begin",pos,currentPos()), std::optional<CompilationError>());
+						return std::make_pair(std::make_optional<Token>(TokenType::BEGIN,temp,pos,currentPos()), std::optional<CompilationError>());
 					else if(temp=="end")
-						return std::make_pair(std::make_optional<Token>(TokenType::END,"end",pos,currentPos()), std::optional<CompilationError>());
+						return std::make_pair(std::make_optional<Token>(TokenType::END,temp,pos,currentPos()), std::optional<CompilationError>());
 					else if(temp=="var")
-						return std::make_pair(std::make_optional<Token>(TokenType::VAR,"var",pos,currentPos()), std::optional<CompilationError>());
+						return std::make_pair(std::make_optional<Token>(TokenType::VAR,temp,pos,currentPos()), std::optional<CompilationError>());
 					else if(temp=="const")
-						return std::make_pair(std::make_optional<Token>(TokenType::CONST,"const",pos,currentPos()), std::optional<CompilationError>());
+						return std::make_pair(std::make_optional<Token>(TokenType::CONST,temp,pos,currentPos()), std::optional<CompilationError>());
 					else if(temp=="print")
-						return std::make_pair(std::make_optional<Token>(TokenType::PRINT,"print",pos,currentPos()), std::optional<CompilationError>());
+						return std::make_pair(std::make_optional<Token>(TokenType::PRINT,temp,pos,currentPos()), std::optional<CompilationError>());
 					else 
 						return std::make_pair(std::make_optional<Token>(TokenType::IDENTIFIER,temp,pos,currentPos()), std::optional<CompilationError>());
 				}
