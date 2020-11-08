@@ -127,18 +127,20 @@ namespace miniplc0 {
 			next = nextToken();
 		// '='
 			if(!next.has_value())
-				return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrConstantNeedValue);
+				return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrNoSemicolon);
 			else if(next.value().GetType() != TokenType::EQUAL_SIGN){
 		// '<表达式>'
 				auto err = analyseExpression();
 				if(err.has_value())
 					return err;
 				initialized = true;
+				next = nextToken();
 			}
 		// ';'
-			next = nextToken();
-			if (!next.has_value() || next.value().GetType() != TokenType::SEMICOLON)
+			if (!next.has_value() || next.value().GetType() != TokenType::SEMICOLON){
+				unreadToken();
 				return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrNoSemicolon);
+			}
 		
 		// 把变量加入符号表
   			if (initialized) {
@@ -426,7 +428,7 @@ namespace miniplc0 {
 
 			next =nextToken();
 			if(!next.has_value()||next.value().GetType() != TokenType::RIGHT_BRACKET)
-				return {CompilationError(_current_pos, ErrorCode::ErrIncompleteExpression)};
+				return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrIncompleteExpression);
 			break;
 		}
 		default:
