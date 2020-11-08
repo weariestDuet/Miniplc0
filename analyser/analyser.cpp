@@ -123,25 +123,22 @@ namespace miniplc0 {
 			if(isDeclared(id.value().GetValueString()))
 				return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrDuplicateDeclaration);
 		// 变量可能没有初始化，仍然需要一次预读
-			// bool initialized = /*填写*/ false;
 			next = nextToken();
-		// '='
 			if(!next.has_value())
 				return {};
 			_instructions.emplace_back(Operation::LIT, 0);
+		// '='
 			if(next.value().GetType() != TokenType::EQUAL_SIGN){
-		// '<表达式>'
 				unreadToken();
 				addUninitializedVariable(id.value());
 			}
+		// '<表达式>'
 			else{
 				auto err = analyseExpression();
 				if(err.has_value())
 					return err;
-				// initialized = true;
 				addVariable(id.value());
 				int32_t index = getIndex(id.value().GetValueString());
-
                 _instructions.emplace_back(Operation::STO, index);
 			}
 			// ';'
@@ -288,7 +285,7 @@ namespace miniplc0 {
 			return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrNeedIdentifier);
 
 		auto ae = analyseExpression();
-		if(!ae.has_value())
+		if(ae.has_value())
 			return ae;
 		
 		next = nextToken();
@@ -405,7 +402,7 @@ namespace miniplc0 {
 			auto name = next.value().GetValueString();
 			if(!isDeclared(name))
 				return {CompilationError(_current_pos, ErrorCode::ErrNotDeclared)};
-			if (!isInitializedVariable(name))
+			if (!isInitializedVariable(name) && !isConstant(name))
 				return {CompilationError(_current_pos,ErrorCode::ErrNotInitialized)};
 			_instructions.emplace_back(Operation::LOD, getIndex(name));
 			break;
