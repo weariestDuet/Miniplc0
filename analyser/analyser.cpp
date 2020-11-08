@@ -122,6 +122,8 @@ namespace miniplc0 {
 				return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrNeedIdentifier);
 			if(isDeclared(id.value().GetValueString()))
 				return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrDuplicateDeclaration);
+		// temp存储当前标识符，基于是否初始化进行不同的add	
+			auto temp = id;
 		// 变量可能没有初始化，仍然需要一次预读
 			next = nextToken();
 			if(!next.has_value())
@@ -129,24 +131,24 @@ namespace miniplc0 {
 			_instructions.emplace_back(Operation::LIT, 0);
 		// '='
 			if(next.value().GetType() != TokenType::EQUAL_SIGN){
-				unreadToken();
+				if (!next.has_value() || next.value().GetType() != TokenType::SEMICOLON)
+                    return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrNoSemicolon);
 				addUninitializedVariable(id.value());
+				continue;
 			}
 		// '<表达式>'
-			else{
-				auto err = analyseExpression();
-				if(err.has_value())
-					return err;
-				addVariable(id.value());
-				int32_t index = getIndex(id.value().GetValueString());
-                _instructions.emplace_back(Operation::STO, index);
-			}
-			// ';'
+			auto err = analyseExpression();
+			if(err.has_value())
+				return err;
+		// ';'
 			next = nextToken();
 			if (!next.has_value() || next.value().GetType() != TokenType::SEMICOLON){
-				unreadToken();
 				return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrNoSemicolon);
 			}
+		//初始化变量
+			addVariable(temp.value());
+			int32_t index = getIndex(temp.value().GetValueString());
+            _instructions.emplace_back(Operation::STO, index);
 		}
 		return {};
 	}
@@ -188,7 +190,7 @@ namespace miniplc0 {
 			}
 
 			case TokenType::SEMICOLON:{
-				nextToken();
+				next = nextToken();
 				break;
 			}
 
@@ -213,17 +215,27 @@ namespace miniplc0 {
 			return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrIncompleteExpression);
 		if (next.value().GetType() == TokenType::PLUS_SIGN){
 			prefix = 1;
-			next =nextToken();
+			
 		}
 		else if (next.value().GetType() == TokenType::MINUS_SIGN) {
 			prefix = -1;
-			next =nextToken();
+			_instructions.emplace_back(Operation::LIT, 0);
 		}
+		else
+			unreadToken();
 		
+		next =nextToken();
 		if(!next.has_value()||next.value().GetType() != TokenType::UNSIGNED_INTEGER)
 			return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrIncompleteExpression);
-		int32_t ans = stoi(next.value().GetValueString());
-		out = prefix * ans; 
+		int64_t ans = stoi(next.value().GetValueString());
+		if(ans > INT32_MAX){
+            return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrIntegerOverflow);
+        }
+		out = (int32_t)ans;
+
+		// 取负
+        if (prefix == -1)
+            _instructions.emplace_back(Operation::SUB, 0);
 		return {};
 	}
 
@@ -282,7 +294,7 @@ namespace miniplc0 {
 		
 		auto next = nextToken();
 		if(!next.has_value()||next.value().GetType() != TokenType::EQUAL_SIGN)
-			return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrNeedIdentifier);
+			return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrConstantNeedValue);
 
 		auto ae = analyseExpression();
 		if(ae.has_value())
@@ -409,8 +421,11 @@ namespace miniplc0 {
 		}
 
 		case TokenType::UNSIGNED_INTEGER:{
-			int32_t val = stoi(next.value().GetValueString()); 
-			_instructions.emplace_back(Operation::LIT, val);
+			int64_t val = stoi(next.value().GetValueString());
+			if(val > INT32_MAX){
+                return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrIntegerOverflow);
+            } 
+			_instructions.emplace_back(Operation::LIT, (int32_t)val);
 			break;
 		}
 
